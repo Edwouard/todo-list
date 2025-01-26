@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="search-header">
+        <h1>{{ h }}</h1>
+        <div class="search-info">
+            <p>Recherche pour : <strong>{{ query }}</strong> ({{ todos|length }} résultat(s))</p>
+        </div>
+    </div>
+
+    {% if todos %}
+    <div class="task-list">
+        <table class="task-table">
+            <thead>
+                <tr>
+                    <th class="status">Statut</th>
+                    <th>Tâche</th>
+                    <th>Description</th>
+                    <th>Date</th>
+                    <th>Priorité</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for todo in todos %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('main.done', _id=todo._id) }}" class="status-toggle">
+                            {% if todo.done == "yes" %}
+                            <span class="status-done">✓</span>
+                            {% else %}
+                            <span class="status-pending">○</span>
+                            {% endif %}
+                        </a>
+                    </td>
+                    <td>{{ todo.name }}</td>
+                    <td>{{ todo.desc }}</td>
+                    <td>{{ todo.date }}</td>
+                    <td>
+                        <span class="priority priority-{{ todo.pr|lower }}">{{ todo.pr }}</span>
+                    </td>
+                    <td class="actions">
+                        <a href="{{ url_for('main.update', _id=todo._id) }}" class="btn-edit">📝</a>
+                        <a href="{{ url_for('main.remove', _id=todo._id) }}" class="btn-delete" 
+                           onclick="return confirm('Voulez-vous vraiment supprimer cette tâche ?')">🗑️</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <p>Aucun résultat trouvé pour votre recherche.</p>
+    </div>
+    {% endif %}
+
+    <div class="search-actions">
+        <a href="{{ url_for('main.list') }}" class="btn-back">Retour à la liste</a>
+    </div>
+</div>
+{% endblock %}
