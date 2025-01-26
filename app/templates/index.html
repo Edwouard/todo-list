@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>{{ h }}</h1>
+
+    {% if error %}
+    <div class="alert alert-danger">
+        <strong>Erreur !</strong> {{ error }}
+    </div>
+    {% endif %}
+
+    <div class="search-box">
+        <form action="{{ url_for('main.search') }}" method="GET" class="search-form">
+            <div class="search-group">
+                <select name="refer" required>
+                    <option value="name">Nom de la tâche</option>
+                    <option value="desc">Description</option>
+                    <option value="date">Date</option>
+                    <option value="pr">Priorité</option>
+                </select>
+                <input type="text" name="key" placeholder="Rechercher..." required value="{{ request.args.get('key', '') }}">
+                <button type="submit" class="search-btn">
+                    <span>🔍</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {% if todos %}
+    <div class="task-list">
+        <table class="task-table">
+            <thead>
+                <tr>
+                    <th class="status">Statut</th>
+                    <th>Tâche</th>
+                    <th>Description</th>
+                    <th>Date</th>
+                    <th>Priorité</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for todo in todos %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('main.done', _id=todo._id) }}">
+                            {% if todo.done == "yes" %}
+                                <img src="{{ url_for('static', filename='images/yes.png') }}" alt="Terminé">
+                            {% else %}
+                                <img src="{{ url_for('static', filename='images/no.png') }}" alt="En cours">
+                            {% endif %}
+                        </a>
+                    </td>
+                    <td>{{ todo.name }}</td>
+                    <td>{{ todo.desc }}</td>
+                    <td>{{ todo.date }}</td>
+                    <td>
+                        <span class="priority priority-{{ todo.pr|lower }}">
+                            {{ todo.pr }}
+                        </span>
+                    </td>
+                    <td class="actions">
+                        <a href="{{ url_for('main.update', _id=todo._id) }}" class="btn-edit">📝</a>
+                        <a href="{{ url_for('main.remove', _id=todo._id) }}" class="btn-delete" 
+                        onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette tâche ?')">🗑️</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <p>Aucune tâche à afficher</p>
+    </div>
+    {% endif %}
+
+    <div class="add-task-section">
+        <h2>Ajouter une tâche</h2>
+        <form action="{{ url_for('main.action') }}" method="POST" class="task-form">
+            <div class="form-group">
+                <label for="name">Nom de la tâche</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="desc">Description</label>
+                <textarea id="desc" name="desc" rows="3" required></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="date">Date</label>
+                    <input type="date" id="date" name="date" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="pr">Priorité</label>
+                    <select id="pr" name="pr" required>
+                        <option value="low">Basse</option>
+                        <option value="medium">Moyenne</option>
+                        <option value="high">Haute</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">Ajouter</button>
+                <button type="reset" class="btn-reset">Réinitialiser</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Formatage des dates
+        document.querySelectorAll('td:nth-child(4)').forEach(cell => {
+            const date = new Date(cell.textContent);
+            if (!isNaN(date)) {
+                cell.textContent = date.toLocaleDateString('fr-FR');
+            }
+        });
+
+        // Date du jour par défaut dans le formulaire
+        document.getElementById('date').valueAsDate = new Date();
+    });
+</script>
+{% endblock %}
+{% endblock %}
