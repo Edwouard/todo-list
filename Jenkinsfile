@@ -13,7 +13,7 @@ pipeline {
             steps {
                 cleanWs()
                 checkout([$class: 'GitSCM',
-                    branches: [[name: '*/main']],
+                    branches: [[name: '*/feature/jenkins-setup']],
                     userRemoteConfigs: [[
                         url: 'https://github.com/Edwouard/todo-list.git',
                         credentialsId: 'github-credentials'
