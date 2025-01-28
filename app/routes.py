@@ -7,6 +7,7 @@ from flask import (
     url_for,
     current_app,
 )
+from datetime import datetime
 from bson.objectid import ObjectId
 
 main = Blueprint("main", __name__)
@@ -152,3 +153,39 @@ def action3():
     except Exception as e:
         print(f"Erreur lors de la sauvegarde: {str(e)}")
         return redirect(url_for("main.tasks"))
+
+
+@main.route("/health")
+def health_check():
+    """
+    Route de vérification de santé qui vérifie :
+    1. Si l'application est en cours d'exécution
+    2. Si la connexion à MongoDB est fonctionnelle
+    """
+    try:
+        # Vérifie la connexion à MongoDB avec un ping
+        current_app.db.client.admin.command("ping")
+
+        return (
+            jsonify(
+                {
+                    "status": "healthy",
+                    "database": "connected",
+                    "timestamp": datetime.utcnow().isoformat(),
+                }
+            ),
+            200,
+        )
+
+    except Exception as e:
+        return (
+            jsonify(
+                {
+                    "status": "unhealthy",
+                    "database": "disconnected",
+                    "error": str(e),
+                    "timestamp": datetime.utcnow().isoformat(),
+                }
+            ),
+            503,
+        )  # Service Unavailable

@@ -70,23 +70,30 @@ pipeline {
 
         stage('Tests de santé') {
             steps {
-                sh '''
+                sh '''#!/bin/bash
+                    echo "Vérification de la santé de l'application..."
                     timeout=60
                     counter=0
-                    until curl -s http://localhost:5000/health > /dev/null; do
+                    until curl -s http://localhost:5000/health | grep -q '"status":"healthy"'; do
                         counter=$((counter + 1))
                         if [ $counter -gt $timeout ]; then
-                            echo "L'application n'a pas démarré après $timeout secondes"
+                            echo "L'application n'a pas démarré correctement après $timeout secondes"
+                            # Affichons les logs pour le diagnostic
+                            echo "Logs du conteneur :"
+                            docker-compose -p todo-app logs web
                             exit 1
                         fi
-                        echo "En attente du démarrage de l'application..."
+                        echo "En attente du démarrage de l'application... ($counter/$timeout)"
                         sleep 1
                     done
-                    echo "Application démarrée avec succès!"
+                    echo "✓ Application démarrée et fonctionnelle"
+                    
+                    # Affichage des informations de santé
+                    echo "Détails de santé de l'application :"
+                    curl -s http://localhost:5000/health | python -m json.tool
                 '''
             }
         }
-    }
 
     post {
         success {
