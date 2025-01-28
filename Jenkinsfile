@@ -62,7 +62,7 @@ pipeline {
             }
         }
 
-        stage('Analyse de l'image Docker') {
+        stage('Analyse de l\'image Docker') {
             steps {
                 echo "Analyse de sécurité de l'image Docker..."
                 // Analyse de sécurité de l'image avec Trivy
