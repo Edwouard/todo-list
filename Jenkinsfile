@@ -14,10 +14,14 @@ pipeline {
                 // Nettoyage de l'espace de travail
                 cleanWs()
                 
-                // Clonage du dépôt
-                echo "Clonage du dépôt GitHub..."
-                git branch: 'main', 
-                    url: 'https://github.com/Edwouard/todo-list-flask.git'
+                // Clonage du dépôt avec credentials
+                checkout([$class: 'GitSCM',
+                    branches: [[name: '*/main']],
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/Edwouard/todo-list-flask.git',
+                        credentialsId: 'github-credentials'
+                    ]]
+                ])
             }
         }
 
