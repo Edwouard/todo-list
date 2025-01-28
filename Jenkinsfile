@@ -38,7 +38,7 @@ pipeline {
         stage('Construction Docker') {
             steps {
                 script {
-                    sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                    sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} -f docker/Dockerfile ."
                     sh "docker image inspect ${DOCKER_IMAGE}:${DOCKER_TAG}"
                 }
             }
