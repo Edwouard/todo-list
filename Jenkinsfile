@@ -2,19 +2,17 @@ pipeline {
     agent any
 
     environment {
-        // Définition des variables d'environnement
         DOCKER_IMAGE = "todo-flask-app"
         DOCKER_TAG = "latest"
         DOCKER_COMPOSE_PROJECT = "todo-app"
+        // Ajout du chemin de l'environnement virtuel
+        VENV_PATH = "/opt/jenkins_venv"
     }
 
     stages {
         stage('Préparation') {
             steps {
-                // Nettoyage de l'espace de travail
                 cleanWs()
-                
-                // Clonage du dépôt avec credentials
                 checkout([$class: 'GitSCM',
                     branches: [[name: '*/main']],
                     userRemoteConfigs: [[
@@ -28,69 +26,65 @@ pipeline {
         stage('Vérification de sécurité') {
             steps {
                 echo "Analyse de sécurité des dépendances..."
-                // Vérification des vulnérabilités dans requirements.txt
-                sh '''
-                    if command -v safety &> /dev/null; then
-                        safety check -r requirements.txt
-                    else
-                        pip install safety
-                        safety check -r requirements.txt
-                    fi
-                '''
+                // Utilisation de l'environnement virtuel global
+                sh """
+                    source ${VENV_PATH}/bin/activate
+                    safety check -r requirements.txt
+                    deactivate
+                """
             }
         }
 
         stage('Tests') {
             steps {
                 echo "Exécution des tests..."
-                // Installation des dépendances dans un environnement virtuel
-                sh '''
-                    python -m venv venv
-                    . venv/bin/activate
-                    pip install -r requirements.txt
-                    python -m pytest tests/
-                '''
+                sh """
+                    source ${VENV_PATH}/bin/activate
+                    pytest tests/
+                    deactivate
+                """
+            }
+        }
+
+        stage('Linting') {
+            steps {
+                echo "Vérification de la qualité du code..."
+                sh """
+                    source ${VENV_PATH}/bin/activate
+                    flake8 .
+                    deactivate
+                """
             }
         }
 
         stage('Construction Docker') {
             steps {
-                echo "Construction des images Docker..."
                 script {
-                    // Construction de l'image Docker
                     sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
-                    
-                    // Vérification de la construction
                     sh "docker image inspect ${DOCKER_IMAGE}:${DOCKER_TAG}"
                 }
             }
         }
 
-        stage('Analyse de l\'image Docker') {
+        stage("Analyse de l'image Docker") {
             steps {
-                echo "Analyse de sécurité de l'image Docker..."
-                // Analyse de sécurité de l'image avec Trivy
-                sh '''
-                    if command -v trivy &> /dev/null; then
-                        trivy image ${DOCKER_IMAGE}:${DOCKER_TAG}
-                    else
-                        echo "Trivy n'est pas installé, skip de l'analyse"
-                    fi
-                '''
+                script {
+                    sh '''
+                        if command -v trivy &> /dev/null; then
+                            trivy image ${DOCKER_IMAGE}:${DOCKER_TAG}
+                        else
+                            echo "Trivy n'est pas installé, analyse ignorée"
+                        fi
+                    '''
+                }
             }
         }
 
         stage('Déploiement Local') {
             steps {
-                echo "Déploiement avec Docker Compose..."
                 script {
-                    // Arrêt des conteneurs existants
                     sh "docker-compose -p ${DOCKER_COMPOSE_PROJECT} down || true"
-                    
-                    // Démarrage des nouveaux conteneurs
                     sh "docker-compose -p ${DOCKER_COMPOSE_PROJECT} up -d"
-                    
-                    // Vérification du déploiement
                     sh "docker-compose -p ${DOCKER_COMPOSE_PROJECT} ps"
                 }
             }
@@ -98,8 +92,6 @@ pipeline {
 
         stage('Tests de santé') {
             steps {
-                echo "Vérification de la santé de l'application..."
-                // Attente que l'application soit prête
                 sh '''
                     timeout=60
                     counter=0
@@ -125,12 +117,10 @@ pipeline {
         
         failure {
             echo "Échec du pipeline"
-            // Nettoyage en cas d'échec
             sh "docker-compose -p ${DOCKER_COMPOSE_PROJECT} down || true"
         }
         
         always {
-            // Nettoyage de l'espace de travail
             cleanWs()
         }
     }
