@@ -17,7 +17,7 @@ pipeline {
                 // Clonage du dépôt
                 echo "Clonage du dépôt GitHub..."
                 git branch: 'main', 
-                    url: 'https://github.com/votre-username/todo-list-flask.git'
+                    url: 'https://github.com/Edwouard/todo-list-flask.git'
             }
         }
 
