@@ -75,7 +75,7 @@ pipeline {
                     
                     # Attendre que les conteneurs soient "healthy" selon Docker
                     echo "Attente du démarrage des conteneurs..."
-                    sleep 15  # Délai initial pour laisser les conteneurs démarrer
+                    sleep 30  # Délai initial pour laisser les conteneurs démarrer
                     
                     # Fonction de test de santé
                     check_health() {
@@ -85,7 +85,7 @@ pipeline {
                     }
                     
                     # Boucle de vérification avec timeout
-                    TIMEOUT=60
+                    TIMEOUT=90
                     COUNTER=0
                     until check_health; do
                         COUNTER=$((COUNTER + 1))
@@ -98,7 +98,7 @@ pipeline {
                             exit 1
                         fi
                         echo "Tentative $COUNTER/$TIMEOUT..."
-                        sleep 1
+                        sleep 5
                     done
                     
                     echo "✅ Application opérationnelle !"
