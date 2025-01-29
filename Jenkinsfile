@@ -72,24 +72,36 @@ pipeline {
             steps {
                 sh '''#!/bin/bash
                     echo "Vérification de la santé de l'application..."
-                    timeout=60
-                    counter=0
-                    until curl -s http://localhost:5000/health | grep -q '"status":"healthy"'; do
-                        counter=$((counter + 1))
-                        if [ $counter -gt $timeout ]; then
-                            echo "L'application n'a pas démarré correctement après $timeout secondes"
-                            # Affichons les logs pour le diagnostic
-                            echo "Logs du conteneur :"
+                    
+                    # Attendre que les conteneurs soient "healthy" selon Docker
+                    echo "Attente du démarrage des conteneurs..."
+                    sleep 15  # Délai initial pour laisser les conteneurs démarrer
+                    
+                    # Fonction de test de santé
+                    check_health() {
+                        RESPONSE=$(curl -s http://localhost:5000/health)
+                        echo $RESPONSE | grep -q '"status":"healthy"'
+                        return $?
+                    }
+                    
+                    # Boucle de vérification avec timeout
+                    TIMEOUT=60
+                    COUNTER=0
+                    until check_health; do
+                        COUNTER=$((COUNTER + 1))
+                        if [ $COUNTER -gt $TIMEOUT ]; then
+                            echo "Timeout après $TIMEOUT secondes"
+                            echo "État des conteneurs :"
+                            docker-compose -p todo-app ps
+                            echo "Logs de l'application :"
                             docker-compose -p todo-app logs web
                             exit 1
                         fi
-                        echo "En attente du démarrage de l'application... ($counter/$timeout)"
+                        echo "Tentative $COUNTER/$TIMEOUT..."
                         sleep 1
                     done
-                    echo "✓ Application démarrée et fonctionnelle"
                     
-                    # Affichage des informations de santé
-                    echo "Détails de santé de l'application :"
+                    echo "✅ Application opérationnelle !"
                     curl -s http://localhost:5000/health | python -m json.tool
                 '''
             }
