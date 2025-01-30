@@ -90,12 +90,12 @@ pipeline {
                         RESPONSE=$(curl -s http://localhost:5000/health)
                         if echo $RESPONSE | grep -q '"status":"healthy"'; then
                             echo "✅ Application en bonne santé!"
-                            echo $RESPONSE | python -m json.tool
+                            echo $RESPONSE | python3 -m json.tool
                             exit 0
                         fi
                         
                         echo "Tentative $i/60 - Réponse actuelle:"
-                        echo $RESPONSE | python -m json.tool
+                        echo $RESPONSE | python3 -m json.tool
                         
                         # Afficher les derniers logs
                         if [ $((i % 10)) -eq 0 ]; then
