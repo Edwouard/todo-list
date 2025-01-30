@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>{{ h }}</h1>
+    
+    <form method="POST" action="{{ url_for('main.action3') }}" class="edit-form">
+        <input type="hidden" name="_id" value="{{ task._id }}">
+        
+        <div class="form-group">
+            <label>Nom de la tâche</label>
+            <input type="text" name="name" value="{{ task.name }}" required>
+        </div>
+
+        <div class="form-group">
+            <label>Description</label>
+            <textarea name="desc" required>{{ task.desc }}</textarea>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" name="date" value="{{ task.date }}" required>
+            </div>
+
+            <div class="form-group">
+                <label>Priorité</label>
+                <select name="pr" required>
+                    <option value="low" {% if task.pr == 'low' %}selected{% endif %}>Basse</option>
+                    <option value="medium" {% if task.pr == 'medium' %}selected{% endif %}>Moyenne</option>
+                    <option value="high" {% if task.pr == 'high' %}selected{% endif %}>Haute</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit">Enregistrer</button>
+            <a href="{{ url_for('main.tasks') }}" class="btn-cancel">Annuler</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

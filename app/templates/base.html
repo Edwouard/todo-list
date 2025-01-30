@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ToDo App{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('main.list') }}" {% if request.endpoint == 'main.list' %}class="active"{% endif %}>Liste globale</a></li>
+                    <li><a href="{{ url_for('main.tasks') }}" {% if request.endpoint == 'main.tasks' %}class="active"{% endif %}>En cours</a></li>
+                    <li><a href="{{ url_for('main.completed') }}" {% if request.endpoint == 'main.completed' %}class="active"{% endif %}>Terminés</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer>
+            <p>ToDo App - Gestionnaire de tâches</p>
+        </footer>
+    </div>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

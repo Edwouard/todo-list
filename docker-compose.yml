@@ -1,0 +1,56 @@
+services:
+  web:
+    image: yaogameli/todo-flask-app:latest
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_APP=app
+      - FLASK_ENV=development
+      - MONGO_HOST=mongodb
+      - MONGO_PORT=27017
+      - MONGO_USER=todo_user
+      - MONGO_PASSWORD=passer
+      - MONGO_DB=todo_db
+    volumes:
+      - .:/app
+    depends_on:
+      mongodb:
+        condition: service_healthy  # Cette ligne est modifiée
+    networks:
+      - todo_network
+    restart: unless-stopped
+    healthcheck:  # Ajout du healthcheck pour le service web
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 10s    # Vérifie toutes les 10 secondes
+      timeout: 5s      # Le test doit répondre en moins de 5 secondes
+      retries: 3       # Réessaie 3 fois avant de considérer le service comme unhealthy
+      start_period: 15s  # Donne 15 secondes au démarrage avant de commencer les tests
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=todo_user
+      - MONGO_INITDB_ROOT_PASSWORD=passer
+      - MONGO_INITDB_DATABASE=todo_db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./docker/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - todo_network
+    restart: unless-stopped
+    healthcheck:  # Ajout du healthcheck pour MongoDB
+      test: mongosh --eval "db.adminCommand('ping').ok" localhost:27017/test --quiet
+      interval: 10s    # Vérifie toutes les 10 secondes
+      timeout: 5s      # Le test doit répondre en moins de 5 secondes
+      retries: 3       # Réessaie 3 fois avant de considérer le service comme unhealthy
+      start_period: 10s  # Donne 10 secondes au démarrage avant de commencer les tests
+
+networks:
+  todo_network:
+    driver: bridge
+
+volumes:
+  mongodb_data:

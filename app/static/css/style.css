@@ -1,0 +1,167 @@
+:root {
+    --primary-color: #6366f1;
+    --secondary-color: #4f46e5;
+    --background-dark: #1e1e2d;
+    --background-light: #2d2d3f;
+    --text-primary: #ffffff;
+    --text-secondary: #94a3b8;
+    --border-color: #3f3f5f;
+    --success-color: #22c55e;
+    --danger-color: #ef4444;
+}
+
+body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background-color: var(--background-dark);
+    color: var(--text-primary);
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background: var(--background-light);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+nav {
+    background-color: var(--background-dark);
+    border-radius: 8px;
+    margin-bottom: 30px;
+}
+
+nav ul {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 4px;
+}
+
+nav li a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 15px 25px;
+    display: block;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+}
+
+nav li a:hover {
+    background-color: var(--primary-color);
+    color: var(--text-primary);
+}
+
+nav li a.active {
+    background-color: var(--primary-color);
+    color: var(--text-primary);
+}
+
+.task-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+    margin: 20px 0;
+}
+
+.task-table th {
+    background-color: var(--background-dark);
+    padding: 12px;
+    text-align: left;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.task-table td {
+    padding: 12px;
+    background-color: var(--background-dark);
+    border-top: 1px solid var(--border-color);
+}
+
+.task-table tr:hover td {
+    background-color: var(--background-light);
+}
+
+.task-form {
+    background: var(--background-dark);
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 30px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    background-color: var(--background-light);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+}
+
+button {
+    background-color: var(--primary-color);
+    color: var(--text-primary);
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+button:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-1px);
+}
+
+.search-box {
+    background-color: var(--background-dark);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.priority-high {
+    color: var(--danger-color);
+}
+
+.priority-medium {
+    color: var(--primary-color);
+}
+
+.priority-low {
+    color: var(--success-color);
+}
+
+td.func1 a, td.func2 a {
+    color: var(--text-secondary);
+    font-size: 20px;
+    padding: 8px;
+    border-radius: 4px;
+    background-color: var(--background-dark);
+}
+
+td.func1 a:hover {
+    color: var(--danger-color);
+    background-color: rgba(239, 68, 68, 0.1);
+}
+
+td.func2 a:hover {
+    color: var(--primary-color);
+    background-color: rgba(99, 102, 241, 0.1);
+}
