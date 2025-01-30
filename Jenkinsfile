@@ -80,44 +80,38 @@ pipeline {
                     echo "=== Attente du démarrage des services ==="
                     sleep 15
                     
+                    # Obtenir l'adresse IP du conteneur web
+                    WEB_CONTAINER_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' todo-app-web-1)
+                    echo "IP du conteneur web : $WEB_CONTAINER_IP"
+                    
                     echo "=== Test de santé détaillé ==="
                     for i in $(seq 1 60); do
-                        # Afficher la réponse HTTP complète
                         echo "Tentative $i/60"
-                        echo "Réponse HTTP complète :"
-                        curl -v http://localhost:5000/health
+                        RESPONSE=$(curl -s "http://${WEB_CONTAINER_IP}:5000/health")
+                        STATUS=$?
                         
-                        # Stocker la réponse pour analyse
-                        RESPONSE=$(curl -s http://localhost:5000/health)
-                        
-                        # Afficher la réponse brute pour debug
-                        echo "Contenu brut de la réponse :"
+                        echo "Code retour curl : $STATUS"
+                        echo "Réponse brute :"
                         echo "$RESPONSE"
                         
-                        # Tenter de parser le JSON et afficher toute erreur
-                        echo "Test de parsing JSON :"
-                        echo "$RESPONSE" | python3 -c "
-        import sys, json
-        try:
-            print(json.load(sys.stdin))
-        except json.JSONDecodeError as e:
-            print(f'Erreur de parsing JSON : {e}')
-            print('Contenu reçu :', repr(sys.stdin.read()))
-        "
-                        
-                        if echo "$RESPONSE" | grep -q '"status":"healthy"'; then
+                        if [ $STATUS -eq 0 ] && echo "$RESPONSE" | grep -q '"status":"healthy"'; then
                             echo "✅ Application en bonne santé!"
-                            echo "$RESPONSE" | python3 -m json.tool
                             exit 0
                         fi
                         
-                        # Attendre avant la prochaine tentative
+                        if [ $((i % 10)) -eq 0 ]; then
+                            echo "=== État des conteneurs ==="
+                            docker-compose -p todo-app ps
+                            echo "=== Derniers logs de l'application ==="
+                            docker-compose -p todo-app logs --tail=20 web
+                        fi
+                        
                         sleep 1
                     done
                     
                     echo "❌ Échec du démarrage"
-                    echo "=== Logs de l'application ==="
-                    docker-compose -p todo-app logs web
+                    echo "=== Logs complets ==="
+                    docker-compose -p todo-app logs
                     
                     exit 1
                 '''
