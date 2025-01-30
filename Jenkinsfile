@@ -81,16 +81,16 @@ pipeline {
                         echo "Tentative $i/60"
                         # Utilisation de Python pour faire la requête HTTP
                         RESPONSE=$(docker-compose -p todo-app exec -T web python3 -c '
-        import http.client
-        import json
-        try:
-            conn = http.client.HTTPConnection("localhost", 5000)
-            conn.request("GET", "/health")
-            response = conn.getresponse()
-            print(response.read().decode())
-        except Exception as e:
-            print(f"Erreur: {e}")
-        ')
+import http.client
+import json
+try:
+    conn = http.client.HTTPConnection("localhost", 5000)
+    conn.request("GET", "/health")
+    response = conn.getresponse()
+    print(response.read().decode())
+except Exception as e:
+    print(f"Erreur: {e}")
+')
                         
                         if echo "$RESPONSE" | grep -q '"status":"healthy"'; then
                             echo "✅ Application en bonne santé!"
