@@ -1,9 +1,6 @@
 services:
   web:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
-    container_name: flask_todo_app
+    image: yaogameli/todo-flask-app:latest
     ports:
       - "5000:5000"
     environment:
@@ -17,10 +14,17 @@ services:
     volumes:
       - .:/app
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy  # Cette ligne est modifiée
     networks:
       - todo_network
     restart: unless-stopped
+    healthcheck:  # Ajout du healthcheck pour le service web
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 10s    # Vérifie toutes les 10 secondes
+      timeout: 5s      # Le test doit répondre en moins de 5 secondes
+      retries: 3       # Réessaie 3 fois avant de considérer le service comme unhealthy
+      start_period: 15s  # Donne 15 secondes au démarrage avant de commencer les tests
 
   mongodb:
     image: mongo:latest
@@ -37,6 +41,12 @@ services:
     networks:
       - todo_network
     restart: unless-stopped
+    healthcheck:  # Ajout du healthcheck pour MongoDB
+      test: mongosh --eval "db.adminCommand('ping').ok" localhost:27017/test --quiet
+      interval: 10s    # Vérifie toutes les 10 secondes
+      timeout: 5s      # Le test doit répondre en moins de 5 secondes
+      retries: 3       # Réessaie 3 fois avant de considérer le service comme unhealthy
+      start_period: 10s  # Donne 10 secondes au démarrage avant de commencer les tests
 
 networks:
   todo_network:

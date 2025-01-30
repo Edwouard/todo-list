@@ -7,6 +7,7 @@ from flask import (
     url_for,
     current_app,
 )
+from datetime import datetime
 from bson.objectid import ObjectId
 
 main = Blueprint("main", __name__)
@@ -152,3 +153,40 @@ def action3():
     except Exception as e:
         print(f"Erreur lors de la sauvegarde: {str(e)}")
         return redirect(url_for("main.tasks"))
+
+
+@main.route("/health")
+def health_check():
+    """
+    Route de vérification de santé améliorée avec plus de détails diagnostiques
+    """
+    health_status = {
+        "status": "unknown",
+        "timestamp": datetime.utcnow().isoformat(),
+        "checks": {
+            "application": True,  # Si nous arrivons ici, l'application répond
+            "database": False,
+            "database_details": None,
+        },
+    }
+
+    try:
+        # Test plus spécifique de MongoDB
+        mongo_status = current_app.db.client.admin.command(
+            {"ping": 1, "comment": "Health check"}
+        )
+
+        health_status["checks"]["database"] = True
+        health_status["checks"]["database_details"] = mongo_status
+        health_status["status"] = "healthy"
+
+        return jsonify(health_status), 200
+
+    except Exception as e:
+        health_status["status"] = "unhealthy"
+        health_status["checks"]["database_details"] = str(e)
+
+        # Log l'erreur pour le debugging
+        current_app.logger.error(f"Health check failed: {str(e)}")
+
+        return jsonify(health_status), 503
