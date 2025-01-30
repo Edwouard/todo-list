@@ -76,23 +76,43 @@ pipeline {
                     echo "=== Attente du démarrage des services ==="
                     sleep 15
                     
-                    echo "=== Test de santé via docker exec ==="
+                    echo "=== Test de santé via docker exec avec Python ==="
                     for i in $(seq 1 60); do
                         echo "Tentative $i/60"
-                        RESPONSE=$(docker-compose -p todo-app exec -T web curl -s --max-time 5 http://localhost:5000/health)
-                        STATUS=$?
+                        # Utilisation de Python pour faire la requête HTTP
+                        RESPONSE=$(docker-compose -p todo-app exec -T web python3 -c '
+        import http.client
+        import json
+        try:
+            conn = http.client.HTTPConnection("localhost", 5000)
+            conn.request("GET", "/health")
+            response = conn.getresponse()
+            print(response.read().decode())
+        except Exception as e:
+            print(f"Erreur: {e}")
+        ')
                         
-                        if [ $STATUS -eq 0 ] && echo "$RESPONSE" | grep -q '"status":"healthy"'; then
+                        if echo "$RESPONSE" | grep -q '"status":"healthy"'; then
                             echo "✅ Application en bonne santé!"
+                            echo "Réponse complète :"
+                            echo "$RESPONSE"
                             exit 0
                         fi
                         
-                        echo "Code retour : $STATUS"
-                        echo "Réponse : $RESPONSE"
+                        echo "Réponse :"
+                        echo "$RESPONSE"
+                        
+                        # Afficher les logs toutes les 10 tentatives
+                        if [ $((i % 10)) -eq 0 ]; then
+                            echo "=== Logs de l'application ==="
+                            docker-compose -p todo-app logs --tail=20 web
+                        fi
+                        
                         sleep 2
                     done
                     
                     echo "❌ Échec du démarrage"
+                    echo "=== Logs complets ==="
                     docker-compose -p todo-app logs
                     exit 1
                 '''
