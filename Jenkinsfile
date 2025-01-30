@@ -73,46 +73,27 @@ pipeline {
                 sh '''#!/bin/bash
                     echo "Vérification de la santé de l'application..."
                     
-                    # Attendre que MongoDB soit prêt
-                    echo "=== Test de connexion MongoDB ==="
-                    docker-compose -p todo-app exec -T mongodb mongosh --eval "db.runCommand('ping').ok"
-                    
                     echo "=== Attente du démarrage des services ==="
                     sleep 15
                     
-                    # Obtenir l'adresse IP du conteneur web
-                    WEB_CONTAINER_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' todo-app-web-1)
-                    echo "IP du conteneur web : $WEB_CONTAINER_IP"
-                    
-                    echo "=== Test de santé détaillé ==="
+                    echo "=== Test de santé via docker exec ==="
                     for i in $(seq 1 60); do
                         echo "Tentative $i/60"
-                        RESPONSE=$(curl -s "http://${WEB_CONTAINER_IP}:5000/health")
+                        RESPONSE=$(docker-compose -p todo-app exec -T web curl -s --max-time 5 http://localhost:5000/health)
                         STATUS=$?
-                        
-                        echo "Code retour curl : $STATUS"
-                        echo "Réponse brute :"
-                        echo "$RESPONSE"
                         
                         if [ $STATUS -eq 0 ] && echo "$RESPONSE" | grep -q '"status":"healthy"'; then
                             echo "✅ Application en bonne santé!"
                             exit 0
                         fi
                         
-                        if [ $((i % 10)) -eq 0 ]; then
-                            echo "=== État des conteneurs ==="
-                            docker-compose -p todo-app ps
-                            echo "=== Derniers logs de l'application ==="
-                            docker-compose -p todo-app logs --tail=20 web
-                        fi
-                        
-                        sleep 1
+                        echo "Code retour : $STATUS"
+                        echo "Réponse : $RESPONSE"
+                        sleep 2
                     done
                     
                     echo "❌ Échec du démarrage"
-                    echo "=== Logs complets ==="
                     docker-compose -p todo-app logs
-                    
                     exit 1
                 '''
             }
