@@ -19,5 +19,5 @@ class Config:
 
     MONGO_URI = os.environ.get(
         "MONGO_URI",
-        f"mongodb://{MONGO_USER}:{MONGO_PASSWORD}@{MONGO_HOST}:{MONGO_PORT}/{MONGO_DB}?authSource=admin",
+        f"mongodb://{MONGO_USER}:{MONGO_PASSWORD}@{MONGO_HOST}:{MONGO_PORT}/{MONGO_DB}?authSource=todo_db",
     )

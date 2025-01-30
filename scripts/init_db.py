@@ -8,7 +8,7 @@ def init_mongodb():
     """
     try:
         # Connexion sans authentification avec l'utilisateur admin
-        client = MongoClient("mongodb://localhost:27017/")
+        client = MongoClient("mongodb://localhost:27017/admin")
 
         # Vérification que MongoDB est démarré
         client.admin.command("ping")
@@ -16,6 +16,7 @@ def init_mongodb():
 
         # Création de la base de données et de l'utilisateur pour l'application
         db = client.todo_db
+    
         db.command(
             "createUser",
             "todo_user",
