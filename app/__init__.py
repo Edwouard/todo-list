@@ -7,10 +7,10 @@ mongo = MongoDatabase()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
-
 
     logger.info("Initialisation de l'application Flask")
 
