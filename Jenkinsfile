@@ -73,36 +73,50 @@ pipeline {
                 sh '''#!/bin/bash
                     echo "Vérification de la santé de l'application..."
                     
-                    # Attendre que les conteneurs soient "healthy" selon Docker
-                    echo "Attente du démarrage des conteneurs..."
-                    sleep 30  # Délai initial pour laisser les conteneurs démarrer
+                    # Vérifier les logs MongoDB en premier
+                    echo "=== Logs MongoDB ==="
+                    docker-compose -p todo-app logs mongodb
                     
-                    # Fonction de test de santé
-                    check_health() {
+                    echo "=== Test de connexion MongoDB ==="
+                    docker-compose -p todo-app exec -T mongodb mongosh --eval "db.runCommand('ping').ok"
+                    
+                    # Attendre le démarrage des services
+                    echo "=== Attente du démarrage des services ==="
+                    sleep 15
+                    
+                    # Vérifier la santé avec plus de détails
+                    echo "=== Test de santé détaillé ==="
+                    for i in $(seq 1 60); do
                         RESPONSE=$(curl -s http://localhost:5000/health)
-                        echo $RESPONSE | grep -q '"status":"healthy"'
-                        return $?
-                    }
-                    
-                    # Boucle de vérification avec timeout
-                    TIMEOUT=90
-                    COUNTER=0
-                    until check_health; do
-                        COUNTER=$((COUNTER + 1))
-                        if [ $COUNTER -gt $TIMEOUT ]; then
-                            echo "Timeout après $TIMEOUT secondes"
-                            echo "État des conteneurs :"
-                            docker-compose -p todo-app ps
-                            echo "Logs de l'application :"
-                            docker-compose -p todo-app logs web
-                            exit 1
+                        if echo $RESPONSE | grep -q '"status":"healthy"'; then
+                            echo "✅ Application en bonne santé!"
+                            echo $RESPONSE | python -m json.tool
+                            exit 0
                         fi
-                        echo "Tentative $COUNTER/$TIMEOUT..."
-                        sleep 5
+                        
+                        echo "Tentative $i/60 - Réponse actuelle:"
+                        echo $RESPONSE | python -m json.tool
+                        
+                        # Afficher les derniers logs
+                        if [ $((i % 10)) -eq 0 ]; then
+                            echo "=== Derniers logs de l'application ==="
+                            docker-compose -p todo-app logs --tail=50 web
+                        fi
+                        
+                        sleep 1
                     done
                     
-                    echo "✅ Application opérationnelle !"
-                    curl -s http://localhost:5000/health | python -m json.tool
+                    echo "❌ Échec du démarrage"
+                    echo "=== État final des conteneurs ==="
+                    docker-compose -p todo-app ps
+                    
+                    echo "=== Logs complets de l'application ==="
+                    docker-compose -p todo-app logs web
+                    
+                    echo "=== Logs complets de MongoDB ==="
+                    docker-compose -p todo-app logs mongodb
+                    
+                    exit 1
                 '''
             }
         }
