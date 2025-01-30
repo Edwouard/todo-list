@@ -122,11 +122,25 @@ except Exception as e:
 
     post {
         success {
-            echo "Pipeline exécuté avec succès!"
+            script {
+                // Notification GitHub du succès
+                githubNotify(
+                    context: 'CI/CD Pipeline',
+                    description: 'Pipeline exécuté avec succès',
+                    status: 'SUCCESS'
+                )
+            }
         }
         
         failure {
-            echo "Échec du pipeline"
+            script {
+                // Notification GitHub de l'échec
+                githubNotify(
+                    context: 'CI/CD Pipeline',
+                    description: 'Échec du pipeline',
+                    status: 'FAILURE'
+                )
+            }
             sh "docker-compose -p ${DOCKER_COMPOSE_PROJECT} down || true"
         }
         
