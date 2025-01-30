@@ -1,34 +1,36 @@
 :root {
-    --primary-color: #4CAF50;
-    --text-color: #333;
-    --background-color: #f5f5f5;
-    --border-color: #ddd;
+    --primary-color: #6366f1;
+    --secondary-color: #4f46e5;
+    --background-dark: #1e1e2d;
+    --background-light: #2d2d3f;
+    --text-primary: #ffffff;
+    --text-secondary: #94a3b8;
+    --border-color: #3f3f5f;
+    --success-color: #22c55e;
+    --danger-color: #ef4444;
 }
 
-/* Style global */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--background-color);
+    font-family: 'Inter', system-ui, sans-serif;
+    background-color: var(--background-dark);
+    color: var(--text-primary);
     margin: 0;
     padding: 20px;
-    color: var(--text-color);
 }
 
 .container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background: var(--background-light);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
-/* Navigation */
 nav {
-    background-color: #333;
-    padding: 0;
-    margin-bottom: 30px;
+    background-color: var(--background-dark);
     border-radius: 8px;
+    margin-bottom: 30px;
 }
 
 nav ul {
@@ -36,47 +38,55 @@ nav ul {
     list-style: none;
     margin: 0;
     padding: 0;
+    gap: 4px;
 }
 
 nav li a {
-    color: white;
+    color: var(--text-secondary);
     text-decoration: none;
     padding: 15px 25px;
     display: block;
-    transition: background-color 0.3s;
+    transition: all 0.3s ease;
+    border-radius: 6px;
 }
 
 nav li a:hover {
     background-color: var(--primary-color);
+    color: var(--text-primary);
 }
 
 nav li a.active {
     background-color: var(--primary-color);
+    color: var(--text-primary);
 }
 
-/* Tableau des tâches */
 .task-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0 8px;
     margin: 20px 0;
-    background: white;
 }
 
 .task-table th {
-    background-color: #f8f9fa;
+    background-color: var(--background-dark);
     padding: 12px;
     text-align: left;
-    border-bottom: 2px solid var(--border-color);
+    color: var(--text-secondary);
+    font-weight: 500;
 }
 
 .task-table td {
     padding: 12px;
-    border-bottom: 1px solid var(--border-color);
+    background-color: var(--background-dark);
+    border-top: 1px solid var(--border-color);
 }
 
-/* Formulaire d'ajout/modification */
+.task-table tr:hover td {
+    background-color: var(--background-light);
+}
+
 .task-form {
-    background: white;
+    background: var(--background-dark);
     padding: 20px;
     border-radius: 8px;
     margin-top: 30px;
@@ -88,171 +98,70 @@ nav li a.active {
 
 .form-group label {
     display: block;
-    margin-bottom: 5px;
-    font-weight: 500;
+    margin-bottom: 8px;
+    color: var(--text-secondary);
 }
 
 .form-group input,
 .form-group textarea,
 .form-group select {
     width: 100%;
-    padding: 8px;
+    padding: 10px;
+    background-color: var(--background-light);
     border: 1px solid var(--border-color);
-    border-radius: 4px;
+    border-radius: 6px;
+    color: var(--text-primary);
 }
 
-/* Boutons */
 button {
     background-color: var(--primary-color);
-    color: white;
-    padding: 10px 20px;
+    color: var(--text-primary);
+    padding: 12px 24px;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.3s ease;
+    font-weight: 500;
 }
 
 button:hover {
-    background-color: #45a049;
+    background-color: var(--secondary-color);
+    transform: translateY(-1px);
 }
 
-/* Priorités */
+.search-box {
+    background-color: var(--background-dark);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
 .priority-high {
-    color: #dc3545;
+    color: var(--danger-color);
 }
 
 .priority-medium {
-    color: #ffc107;
+    color: var(--primary-color);
 }
 
 .priority-low {
-    color: #28a745;
+    color: var(--success-color);
 }
 
-/* Zone de recherche */
-.search-box {
-    margin-bottom: 20px;
-    display: flex;
-    gap: 10px;
-}
-
-.search-box input,
-.search-box select {
-    padding: 8px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-}
-
-.search-box input {
-    flex: 1;
-}
-
-/* Styles pour la recherche */
-.search-box {
-    margin: 20px 0;
-}
-
-.search-form {
-    display: flex;
-    gap: 10px;
-}
-
-.search-group {
-    display: flex;
-    gap: 10px;
-    width: 100%;
-}
-
-.search-group select {
-    min-width: 150px;
-}
-
-.search-group input {
-    flex: 1;
-    min-width: 200px;
-}
-
-.search-btn {
-    padding: 8px 15px;
-    background-color: var(--primary-color);
-    border: none;
-    border-radius: 4px;
-    color: white;
-    cursor: pointer;
-}
-
-.search-header {
-    margin-bottom: 20px;
-}
-
-.search-info {
-    color: #666;
-    margin: 10px 0;
-}
-
-.empty-state {
-    text-align: center;
-    padding: 40px;
-    color: #666;
-}
-
-.btn-back {
-    display: inline-block;
-    padding: 8px 15px;
-    background-color: #666;
-    color: white;
-    text-decoration: none;
-    border-radius: 4px;
-    margin-top: 20px;
-}
-
-.status img {
-    width: 20px;
-    height: 20px;
-    vertical-align: middle;
-}
-
-/* Styles pour les colonnes d'actions */
-th.func1, th.func2 {
-    width: 80px;
-    text-align: center;
-}
-
-td.func1, td.func2 {
-    text-align: center;
-    padding: 8px;
-}
-
-/* Style des boutons d'action */
 td.func1 a, td.func2 a {
-    display: inline-block;
-    font-size: 24px;
-    color: #333;
-    background-color: #f8f9fa;
-    padding: 8px 12px;
+    color: var(--text-secondary);
+    font-size: 20px;
+    padding: 8px;
     border-radius: 4px;
-    transition: all 0.2s ease;
-    text-decoration: none;
+    background-color: var(--background-dark);
 }
 
-/* Hover des boutons */
 td.func1 a:hover {
-    background-color: #ffebee;
-    color: #dc3545;
-    transform: scale(1.1);
+    color: var(--danger-color);
+    background-color: rgba(239, 68, 68, 0.1);
 }
 
 td.func2 a:hover {
-    background-color: #e3f2fd;
-    color: #2196f3;
-    transform: scale(1.1);
-}
-
-/* Style des icônes */
-td.func1 a span, td.func2 a span {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 32px;
-    min-height: 32px;
+    color: var(--primary-color);
+    background-color: rgba(99, 102, 241, 0.1);
 }

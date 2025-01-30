@@ -1,0 +1,176 @@
+---
+# ConfigMap pour les variables d'environnement non-sensibles
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: todo-app-config
+data:
+  FLASK_APP: "app"
+  FLASK_ENV: "production"
+  FLASK_RUN_HOST: "0.0.0.0"
+  FLASK_RUN_PORT: "5000"
+  MONGO_HOST: "mongodb-service"
+  MONGO_PORT: "27017"
+  MONGO_DB: "todo_db"
+
+---
+# Secret pour les informations sensibles
+apiVersion: v1
+kind: Secret
+metadata:
+  name: todo-app-secrets
+type: Opaque
+stringData:
+  MONGO_USER: "todo_user"
+  MONGO_PASSWORD: "passer"
+
+---
+# PersistentVolumeClaim pour MongoDB
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongodb-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+# Service pour MongoDB
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-service
+spec:
+  selector:
+    app: mongodb
+  ports:
+    - protocol: TCP
+      port: 27017
+      targetPort: 27017
+
+---
+# Déploiement MongoDB
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb-deployment
+spec:
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      containers:
+      - name: mongodb
+        image: mongo:latest
+        ports:
+        - containerPort: 27017
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: todo-app-secrets
+              key: MONGO_USER
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: todo-app-secrets
+              key: MONGO_PASSWORD
+        - name: MONGO_INITDB_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: todo-app-config
+              key: MONGO_DB
+        volumeMounts:
+        - name: mongodb-data
+          mountPath: /data/db
+      volumes:
+      - name: mongodb-data
+        persistentVolumeClaim:
+          claimName: mongodb-pvc
+
+---
+# Service pour l'application Flask
+apiVersion: v1
+kind: Service
+metadata:
+  name: todo-app-service
+spec:
+  selector:
+    app: todo-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+  type: LoadBalancer
+
+---
+# Déploiement de l'application Flask
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo-app-deployment
+spec:
+  replicas: 3  # Nous configurons 3 réplicas comme demandé
+  selector:
+    matchLabels:
+      app: todo-app
+  template:
+    metadata:
+      labels:
+        app: todo-app
+    spec:
+      containers:
+      - name: todo-app
+        image: yaogameli/todo-flask-app:latest
+        ports:
+        - containerPort: 5000
+        env:
+        - name: FLASK_APP
+          valueFrom:
+            configMapKeyRef:
+              name: todo-app-config
+              key: FLASK_APP
+        - name: FLASK_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: todo-app-config
+              key: FLASK_ENV
+        - name: MONGO_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: todo-app-config
+              key: MONGO_HOST
+        - name: MONGO_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: todo-app-config
+              key: MONGO_PORT
+        - name: MONGO_USER
+          valueFrom:
+            secretKeyRef:
+              name: todo-app-secrets
+              key: MONGO_USER
+        - name: MONGO_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: todo-app-secrets
+              key: MONGO_PASSWORD
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 15
+          periodSeconds: 20
